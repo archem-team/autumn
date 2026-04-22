@@ -5,6 +5,9 @@ pub mod util;
 pub mod version;
 pub mod virus_scan;
 
+#[global_allocator]
+static GLOBAL: tikv_jemallocator::Jemalloc = tikv_jemallocator::Jemalloc;
+
 use futures::StreamExt;
 use util::variables::{CONFIG, HOST, LOCAL_STORAGE_PATH, USE_S3};
 
