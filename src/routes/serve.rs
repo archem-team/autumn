@@ -128,9 +128,10 @@ pub async fn fetch_file(
             })
             .await
             .map_err(|_| Error::IOError)?;
-            if let Ok(bytes) = resize_result {
-                return Ok((bytes, Some(content_type_str)));
-            }
+            return match resize_result {
+                Ok(bytes) => Ok((bytes, Some(content_type_str))),
+                Err(_) => Ok((contents, None)),
+            };
         }
     }
 
