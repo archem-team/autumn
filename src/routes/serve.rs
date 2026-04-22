@@ -21,7 +21,7 @@ pub struct Resize {
     pub max_side: Option<isize>,
 }
 
-pub fn try_resize(buf: Vec<u8>, width: u32, height: u32) -> Result<Vec<u8>, ImageError> {
+pub fn try_resize(buf: &[u8], width: u32, height: u32) -> Result<Vec<u8>, ImageError> {
     let mut bytes: Vec<u8> = Vec::new();
     let config = Config::global();
 
@@ -117,21 +117,19 @@ pub async fn fetch_file(
                 _ => return Ok((contents, None)),
             };
 
-            if let Ok(Ok(bytes)) = actix_web::web::block(move || {
-                try_resize(contents, target_width as u32, target_height as u32)
+            let content_type_str = match config.serve {
+                ServeConfig::PNG => "image/png",
+                ServeConfig::WEBP { .. } => "image/webp",
+            }
+            .to_string();
+            let (resize_result, contents) = actix_web::web::block(move || {
+                let resized = try_resize(&contents, target_width as u32, target_height as u32);
+                (resized, contents)
             })
             .await
-            {
-                return Ok((
-                    bytes,
-                    Some(
-                        match config.serve {
-                            ServeConfig::PNG => "image/png",
-                            ServeConfig::WEBP { .. } => "image/webp",
-                        }
-                        .to_string(),
-                    ),
-                ));
+            .map_err(|_| Error::IOError)?;
+            if let Ok(bytes) = resize_result {
+                return Ok((bytes, Some(content_type_str)));
             }
         }
     }
