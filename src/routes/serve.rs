@@ -117,10 +117,8 @@ pub async fn fetch_file(
                 _ => return Ok((contents, None)),
             };
 
-            // There should be a way to do this zero-copy, but I can't be asked to figure it out right now.
-            let cloned = contents.clone();
             if let Ok(Ok(bytes)) = actix_web::web::block(move || {
-                try_resize(cloned, target_width as u32, target_height as u32)
+                try_resize(contents, target_width as u32, target_height as u32)
             })
             .await
             {
