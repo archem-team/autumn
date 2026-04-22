@@ -7,7 +7,7 @@ RUN USER=root cargo new --bin autumn
 WORKDIR /home/rust/src/autumn
 COPY Cargo.toml Cargo.lock ./
 COPY src ./src
-RUN apt-get update && apt-get install -y libssl-dev pkg-config && cargo install --locked --path .
+RUN apt-get update && apt-get install -y libssl-dev pkg-config make && cargo install --locked --path .
 
 # Bundle Stage
 FROM debian:bullseye-slim
